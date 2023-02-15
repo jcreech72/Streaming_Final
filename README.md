@@ -12,14 +12,14 @@ The food temperature doesn't change. At some point, the food will hit a temperat
 # Sensors
 We have temperature sensors track temperatures and record them to generate a history of both (a) the smoker and (b) the food over time. These readings are an example of time-series data, and are considered streaming data or data in motion.
 
-#Streaming Data
+# Streaming Data
 Our thermometer records three temperatures every thirty seconds (two readings every minute). The three temperatures are:
 
 the temperature of the smoker itself.
 the temperature of the first of two foods, Food A.
 the temperature for the second of two foods, Food B.
 
-#Python Code
+# Python Code
 The Python code will import several modules: Pika, Sys, Webbrowser, CSV, Time and Pickle
 Pika is used to connect to RabbitMQ server and send messages
 Sys allows us to get command line arguments
