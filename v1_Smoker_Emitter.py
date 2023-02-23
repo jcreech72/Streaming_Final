@@ -22,7 +22,7 @@ import sys
 import webbrowser
 import csv
 import time
-import pickle
+import pickle 
 
 
 
@@ -58,11 +58,11 @@ def send_message(host: str):
         # use the channel to delete the queues if they exist 
         ch.queue_delete(queue="01-smoker")
         ch.queue_delete(queue="02-food-A")
-        ch.queue_delete(queue="02-food-B")
+        ch.queue_delete(queue="03-food-B")
         # use the channel to declare the durable queues 
         ch.queue_declare(queue="01-smoker", durable=True)
         ch.queue_declare(queue="02-food-A", durable=True)
-        ch.queue_declare(queue="02-food-B", durable=True)
+        ch.queue_declare(queue="03-food-B", durable=True)
 
         # open the input file
         input_file = open("smoker-temps.csv", "r")
@@ -91,11 +91,12 @@ def send_message(host: str):
             binary_smoker_message = pickle.dumps(smoker_message)
             binary_food_a_message = pickle.dumps(food_a_message)
             binary_food_b_message = pickle.dumps(food_b_message)
+            
 
             # send the message to an individual queue using the routing key to identify the queue to send to 
             ch.basic_publish(exchange="", routing_key="01-smoker", body=binary_smoker_message)
             ch.basic_publish(exchange="", routing_key="02-food-A", body=binary_food_a_message)
-            ch.basic_publish(exchange="", routing_key="02-food-B", body=binary_food_b_message)
+            ch.basic_publish(exchange="", routing_key="03-food-B", body=binary_food_b_message)
 
             # print a message to the console for the user to see what is happening 
             print(f" [x] Sent {smoker_message}")
@@ -129,5 +130,5 @@ if __name__ == "__main__":
         webbrowser.open_new("http://localhost:15672/#/queues")
         print()
     # Use the send_message function to start the stream
-    send_message("localhost")
+    send_message ("localhost")
     
