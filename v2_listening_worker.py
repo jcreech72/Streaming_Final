@@ -108,12 +108,7 @@ def food_a_callback(ch, method, properties, body):
                     print(f"Food A Alert! Food Stall!! Food A has decreased by less than 1 degree in 10 minutes from {food_a_temp_last} to {food_a_temp_current}")
                     #send email alert if food a has decreased by less than 1 degree in 10 minutes
                     print(f"Email Alert! Food Stall!! Food A has decreased by less than 1 degree in 10 minutes from {food_a_temp_last} to {food_a_temp_current}")
-                    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-                        smtp.login('julie0818abrams@gmail.com', '$tr3aming101')
-                        subject = 'Food A Alert! Food Stall!!'
-                        body = f"Food A has decreased by less than 1 degree in 10 minutes from {food_a_temp_last} to {food_a_temp_current}"
-                        msg = f'Subject: {subject}\n\n{body}'
-                        smtp.sendmail('julie0818abrams@gmail.com')
+                    
                     #now = time.time() #remember when we sent the alert
                     #wait 5 minutes
                     #time.sleep(300)
