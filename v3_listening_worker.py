@@ -97,14 +97,14 @@ def food_a_callback(ch, method, properties, body):
             if (abs(food_a_temp_last)) - (abs(food_a_temp_current)) < 1:
                 #send alert if food a has decreased by less than 1 degree in 10 minutes
                 print(f"Food A Alert! Food Stall!! Food A has decreased by less than 1 degree in 10 minutes from {food_a_temp_last} to {food_a_temp_current}")
-                #then = time.time() #remember when we sent the alert
-                #wait 5 minutes or 300 -- reduced to 20 seconds for testing
-                #time.sleep(20)
+                then = time.time() #remember when we sent the alert
+               # wait 5 minutes or 300 -- reduced to 20 seconds for testing
+                time.sleep(20)
                 #check if temp has changed
-                    #now = time.time() #remember when we sent the alert
-                    #wait 5 minutes
-                    #time.sleep(300)
-                    #check if temp has changed
+                now = time.time() #remember when we sent the alert
+                #wait 5 minutes
+                time.sleep(300)
+                #check if temp has changed
             else: #print current temp
                 print(f"Current food a temp is {food_a_temp_current}")
         else: #print current temp if deque is not full
