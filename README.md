@@ -1,6 +1,6 @@
-# streaming-05-smart-smoker
+# Streaming_Final
 Julie Creech 
-February 14, 2023
+February 21, 2023
 ## Creating a Producer
 
 # Using a Barbeque Smoker:
@@ -35,12 +35,27 @@ Within the Try function the blocking connection is created to the RabbitMQ serve
 First, the queues are deleted to clear old messages, and then the queues are created. The queues are durable so the messages will persist, which is why they have to be deleted in the beginning. 
 Next, the file is open and read. There is a for statement which iterates through the data with if statements to read the data and understand if the value is greater than 0. If it is >0, a variable is established with the value of floater type including the value within the csv file at that line. 
 We provide a message showing the values and then prepare the data to be sent over the channel using a routing key. 
-The listener has not yet been established; however, I was able to see in the console this reaches RabbitMQ and is sitting in a queue.
+V3_Listening_worker.py is the verison of the listener that provides a pause for smoker A when it is stalled. 
 
 Once complete, the connect is closed. 
 ## How to Run the Program
 For this exercise, to show the producer, the V1_Smoker_Emitter.py file can be run within a VS Code terminal. Once run, you will be asked whether you want the console to open, and the default browser will pop open to display the console showing a login or the queues that have been created. 
 The code will continue to run until complete. It may be interrupted with a CTRl+C
+The listener to run is V3_listening_worker.py because it includes a wait when the smoker A stalls. The wait will provide some time so no alerting is done during tha time. 
 
 ## Screen Shot of Running Demonstration
-![Screenshot 2023-02-14 221059](https://user-images.githubusercontent.com/89232631/218927714-b31acb34-850c-4ec3-8a91-7ba4da1b0741.jpg)
+
+Screen shots of all working with the first alert noted:
+![First Alert Screenshot 2023-02-27 205146](https://user-images.githubusercontent.com/89232631/222028929-73315c10-305c-4a04-ac1c-b74b5cb857a5.jpg)
+
+Pause 5 min when temperature stalled
+![Pause 5 Min Screenshot 2023-02-27 204733](https://user-images.githubusercontent.com/89232631/222028988-88f18a60-a7e1-4f48-a1d9-b3dd72f49aa9.jpg)
+
+RabbitMQ queue
+![Screenshot 2023-02-27 204656](https://user-images.githubusercontent.com/89232631/222029094-2cfe070b-07a4-4b9a-91f9-abc99d428497.jpg)
+
+Smoker Temp Decreased by 15 Min
+![Smoker Temp Decreased by 15 min Screenshot 2023-02-27 204859](https://user-images.githubusercontent.com/89232631/222029157-9f2f09de-4d9e-4e98-b829-c9ee27bc621d.jpg)
+
+Exception worked after pause
+![After Pause Exception Screenshot 2023-02-27 205235](https://user-images.githubusercontent.com/89232631/222029215-46a5c1f7-ba07-4de0-9be7-0cfe0a9c7f69.jpg)
