@@ -9,9 +9,10 @@ For the listener, we need to do the following:
     import pike and sys to connect to the RabbitMQ server and send messages.
     import time to use the sleep function to simulate work.
     import deque to use a double ended queue to store the messages.
+    Import smtplib to send email alerts
 
     Author: Julie Creech
-    Date: February 9, 2023 Modified February 20, 2023
+    Date: February 9, 2023 Modified February 27, 2023
 
 """
 
@@ -20,6 +21,11 @@ import sys
 import time
 import pickle
 from collections import deque
+#import smtplib for the actual sending function
+import smtplib
+#import email modules to format and send email
+from email.mime.text import MIMEText
+
 
 #limit smoker readings to last 2.5 minutes/5 readings
 smoker_deque = deque(maxlen=5)
@@ -93,10 +99,29 @@ def food_a_callback(ch, method, properties, body):
             if (abs(food_a_temp_last)) - (abs(food_a_temp_current)) < 1:
                 #send alert if food a has decreased by less than 1 degree in 10 minutes
                 print(f"Food A Alert! Food Stall!! Food A has decreased by less than 1 degree in 10 minutes from {food_a_temp_last} to {food_a_temp_current}")
-            else: #print current temp
+                then = time.time() #remember when we sent the alert
+                #wait 5 minutes
+                time.sleep(300)
+                #check if temp has changed
+                if (abs(food_a_temp_last)) - (abs(food_a_temp_current)) < 1:
+                    #send alert if food a has decreased by less than 1 degree in 10 minutes
+                    print(f"Food A Alert! Food Stall!! Food A has decreased by less than 1 degree in 10 minutes from {food_a_temp_last} to {food_a_temp_current}")
+                    #send email alert if food a has decreased by less than 1 degree in 10 minutes
+                    print(f"Email Alert! Food Stall!! Food A has decreased by less than 1 degree in 10 minutes from {food_a_temp_last} to {food_a_temp_current}")
+                    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+                        smtp.login('julie0818abrams@gmail.com', '$tr3aming101')
+                        subject = 'Food A Alert! Food Stall!!'
+                        body = f"Food A has decreased by less than 1 degree in 10 minutes from {food_a_temp_last} to {food_a_temp_current}"
+                        msg = f'Subject: {subject}\n\n{body}'
+                        smtp.sendmail('julie0818abrams@gmail.com')
+                    #now = time.time() #remember when we sent the alert
+                    #wait 5 minutes
+                    #time.sleep(300)
+                    #check if temp has changed
+                else: #print current temp
+                    print(f"Current food a temp is {food_a_temp_current}")
+            else: #print current temp if deque is not full
                 print(f"Current food a temp is {food_a_temp_current}")
-        else: #print current temp if deque is not full
-            print(f"Current food a temp is {food_a_temp_current}")
 
 # define a callback function to be called when a message is received
 def food_b_callback(ch, method, properties, body):
@@ -124,7 +149,7 @@ def food_b_callback(ch, method, properties, body):
 
         #compare first and last message if have been in the deque for 20 readings
         if len(food_b_deque) == 20:
-            if food_b_temp_last - food_b_temp_current <1:
+            if (abs(food_b_temp_last)) - (abs(food_b_temp_current)) <1:
                 #send alert if food b has decreased by less than 1 degree in 10 minutes
                 print(f"Food B Alert! Food B has decreased by less than 1 degree in 10 minutes from {food_b_temp_last} to {food_b_temp_current}")
             else:
@@ -140,7 +165,7 @@ def food_b_callback(ch, method, properties, body):
 
             #compare first and last message if have been in the deque for 20 readings
             if len(food_b_deque) == 20:
-                if food_b_temp_last - food_b_temp_current <1:
+                if (abs(food_b_temp_last)) - (abs(food_b_temp_current)) <1:
                     #send alert if food b has decreased by less than 1 degree in 10 minutes
                     print(f"Food B Alert! Food Stall! Food B has decreased by less than 1 degree in 10 minutes from {food_b_temp_last} to {food_b_temp_current}")
                 else:

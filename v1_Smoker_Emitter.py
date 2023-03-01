@@ -104,7 +104,7 @@ def send_message(host: str):
             print(f" [x] Sent {food_b_message}")
 
             # wait 30 seconds before sending next temp
-            time.sleep(30)
+            #time.sleep(1)
         # close the file
         input_file.close()
 

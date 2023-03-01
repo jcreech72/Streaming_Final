@@ -5,99 +5,218 @@
     Screen shots in Readme.md
     Run this program in a terminal window.
     Multiple producers and a single consumer
+For the listener, we need to do the following:
+    import pike and sys to connect to the RabbitMQ server and send messages.
+    import time to use the sleep function to simulate work.
+    import deque to use a double ended queue to store the messages.
+    Import smtplib to send email alerts
 
     Author: Julie Creech
-    Date: February 9, 2023
+    Date: February 9, 2023 Modified February 27, 2023
 
 """
 
 import pika
 import sys
 import time
+import pickle
+from collections import deque
+#import smtplib for the actual sending function
+
+
+
+#limit smoker readings to last 2.5 minutes/5 readings
+smoker_deque = deque(maxlen=5)
+#limit food a readings to last 10 minutes/20 readings
+food_a_deque = deque(maxlen=20)
+#limit food b readings to last 10 minutes/20 readings
+food_b_deque = deque(maxlen=20)
 
 # define a callback function to be called when a message is received
-def callback(ch, method, properties, body):
+def smoker_callback(ch, method, properties, body):
     """ Define behavior on getting a message."""
     # decode the binary message body to a string
-    print(f" [x] Received {body.decode()}")
-    # simulate work by sleeping for the number of dots in the message
-    time.sleep(body.count(b"."))
-    # when done with task, tell the user
-    print(" [x] Done.")
-    # acknowledge the message was received and processed 
+    print(f" [x] Received {pickle.loads(body)} on 01-smoker")
+    #acknowledge the message was received and processed
     # (now it can be deleted from the queue)
     ch.basic_ack(delivery_tag=method.delivery_tag)
+    #convert message from binary to tuple
+    message = pickle.loads(body)
+    #add temp to deque
+    if isinstance(message[1], float):
+        smoker_deque.appendleft(message)
 
+    #only perform check if deque has recorded
+    #find first item in deque
+    cur_smoker_deque_temp = smoker_deque[0]
+    #get current temp
+    smoker_temp_current = cur_smoker_deque_temp[1]
 
-# define a main function to run the program matching the task_queue with the worker
-def main(hn: str = "localhost", qn: str = "task_queue3"):
+    #find last item in deque
+    last_smoker_deque_temp = smoker_deque[-1]
+    #get last temp
+    smoker_temp_last = last_smoker_deque_temp[1]
+
+    #compare first and last message if have been in the deque for 5 readings
+    if len(smoker_deque) == 5:
+        #find temp of last item in deque
+        if smoker_temp_last - smoker_temp_current >= 15:
+            #send alert if smoker has decreased by 15 degrees or more
+            print(f"Smoker Alert! Smoker has decreased by 15 degrees or more in 2.5 minutes from {smoker_temp_last} to {smoker_temp_current}")
+        else: #print current temp
+            print(f"Current smoker temp is {smoker_temp_current}")
+    else: #print current temp if deque is not full
+        print(f"Current smoker temp is {smoker_temp_current}")
+
+# define a callback function to be called when a message is received
+def food_a_callback(ch, method, properties, body):
+    """ Define behavior on getting a message."""
+    # decode the binary message body to a string
+    print(f" [x] Received {pickle.loads(body)} on 02-food-A")
+    #acknowledge the message was received and processed
+    # (now it can be deleted from the queue)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+    #convert message from binary to tuple
+    message = pickle.loads(body)
+    #add temp to deque
+    if isinstance(message[1], float):
+        food_a_deque.appendleft(message)
+        #only perform check if deque has recorded
+        #find first item in deque
+        cur_food_a_deque_temp = food_a_deque[0]
+        #get current temp
+        food_a_temp_current = cur_food_a_deque_temp[1]
+
+        #find last item in deque
+        last_food_a_deque_temp = food_a_deque[-1]
+        #get last temp
+        food_a_temp_last = last_food_a_deque_temp[1]
+
+        #compare first and last message if have been in the deque for 20 readings
+        if len(food_a_deque) == 20:
+            if (abs(food_a_temp_last)) - (abs(food_a_temp_current)) < 1:
+                #send alert if food a has decreased by less than 1 degree in 10 minutes
+                print(f"Food A Alert! Food Stall!! Food A has decreased by less than 1 degree in 10 minutes from {food_a_temp_last} to {food_a_temp_current}")
+                #then = time.time() #remember when we sent the alert
+                #wait 5 minutes or 300 -- reduced to 20 seconds for testing
+                #time.sleep(20)
+                #check if temp has changed
+                    #now = time.time() #remember when we sent the alert
+                    #wait 5 minutes
+                    #time.sleep(300)
+                    #check if temp has changed
+            else: #print current temp
+                print(f"Current food a temp is {food_a_temp_current}")
+        else: #print current temp if deque is not full
+            print(f"Current food a temp is {food_a_temp_current}")
+
+# define a callback function to be called when a message is received
+def food_b_callback(ch, method, properties, body):
+    """ Define behavior on getting a message."""
+    # decode the binary message body to a string
+    print(f" [x] Received {pickle.loads(body)} on 03-food-B")
+    #acknowledge the message was received and processed
+    # (now it can be deleted from the queue)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+    #convert message from binary to tuple
+    message = pickle.loads(body)
+    #add temp to deque
+    if isinstance(message[1], float):
+        food_b_deque.appendleft(message)
+        #only perform check if deque has recorded
+        #find first item in deque
+        cur_food_b_deque_temp = food_b_deque[0]
+        #get current temp
+        food_b_temp_current = cur_food_b_deque_temp[1]
+
+        #find last item in deque
+        last_food_b_deque_temp = food_b_deque[-1]
+        #get last temp
+        food_b_temp_last = last_food_b_deque_temp[1]
+
+        #compare first and last message if have been in the deque for 20 readings
+        if len(food_b_deque) == 20:
+            if (abs(food_b_temp_last)) - (abs(food_b_temp_current)) <1:
+                #send alert if food b has decreased by less than 1 degree in 10 minutes
+                print(f"Food B Alert! Food B has decreased by less than 1 degree in 10 minutes from {food_b_temp_last} to {food_b_temp_current}")
+            else:
+                #print current temp
+                print(f"Current food b temp is {food_b_temp_current}")
+        else: #print current temp if deque is not full
+            print(f"Current food b temp is {food_b_temp_current}")
+
+            #find last item in deque
+            last_food_b_deque_temp = food_b_deque[-1]
+            #get last temp
+            food_b_temp_last = last_food_b_deque_temp[1]
+
+            #compare first and last message if have been in the deque for 20 readings
+            if len(food_b_deque) == 20:
+                if (abs(food_b_temp_last)) - (abs(food_b_temp_current)) <1:
+                    #send alert if food b has decreased by less than 1 degree in 10 minutes
+                    print(f"Food B Alert! Food Stall! Food B has decreased by less than 1 degree in 10 minutes from {food_b_temp_last} to {food_b_temp_current}")
+                else:
+                    #print current temp
+                    print(f"Current food b temp is {food_b_temp_current}")
+            else: #print current temp if deque is not full
+                print(f"Current food b temp is {food_b_temp_current}")
+                
+# define a callback function to be called when a message is received
+def main(hn: str):
     """ Continuously listen for task messages on a named queue."""
 
-    # when a statement can go wrong, use a try-except block
+    # when a statement can raise an exception, include it in the try clause
     try:
-        # try this code, if it works, keep going
-        # create a blocking connection to the RabbitMQ server
+        #try to connect to the rabbitmq server
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=hn))
 
-    # except, if there's an error, do this
+    #except, if there is an error
     except Exception as e:
-        print()
-        print("ERROR: connection to RabbitMQ server failed.")
-        print(f"Verify the server is running on host={hn}.")
-        print(f"The error says: {e}")
-        print()
+        #print the error
+        print(f"Error connecting to rabbitmq server: {e}")
+        #exit the program
         sys.exit(1)
-
     try:
-        # use the connection to create a communication channel
+        #use the connection to create a channel
         channel = connection.channel()
 
-        # use the channel to declare a durable queue
-        # a durable queue will survive a RabbitMQ server restart
-        # and help ensure messages are processed in order
-        # messages will not be deleted until the consumer acknowledges
-        channel.queue_declare(queue=qn, durable=True)
+        #use the channel to declare a queue
+        channel.queue_declare(queue="01-smoker", durable=True)
+        channel.queue_declare(queue="02-food-A", durable=True)
+        channel.queue_declare(queue="03-food-B", durable=True)
 
-        # The QoS level controls the # of messages
-        # that can be in-flight (unacknowledged by the consumer)
-        # at any given time.
-        # Set the prefetch count to one to limit the number of messages
-        # being consumed and processed concurrently.
-        # This helps prevent a worker from becoming overwhelmed
-        # and improve the overall system performance. 
-        # prefetch_count = Per consumer limit of unaknowledged messages      
-        channel.basic_qos(prefetch_count=1) 
+        # set the prefetch count to 1
+        channel.basic_qos(prefetch_count=1)
 
-        # configure the channel to listen on a specific queue,  
-        # use the callback function named callback,
-        # and do not auto-acknowledge the message (let the callback handle it)
-        channel.basic_consume( queue=qn, on_message_callback=callback)
+        # Configure the queue to call the callback function when a message is received
+        channel.basic_consume(queue="01-smoker", on_message_callback=smoker_callback)
+        channel.basic_consume(queue="02-food-A", on_message_callback=food_a_callback)
+        channel.basic_consume(queue="03-food-B", on_message_callback=food_b_callback)
 
-        # print a message to the console for the user
-        print(" [*] Ready for work. To exit press CTRL+C")
+        #print a message to show the program is running
+        print(" [*] Waiting for messages. To exit press CTRL+C")
 
-        # start consuming messages via the communication channel
+        #start the program
         channel.start_consuming()
 
-    # except, in the event of an error OR user stops the process, do this
+    #except, if there is an error
     except Exception as e:
-        print()
-        print("ERROR: something went wrong.")
-        print(f"The error says: {e}")
+        #print the error
+        print(f"Error consuming messages: {e}")
+        #exit the program
         sys.exit(1)
     except KeyboardInterrupt:
         print()
-        print(" User interrupted continuous listening process.")
+        print(" User interrupted continous listening.")
         sys.exit(0)
     finally:
-        print("\nClosing connection. Goodbye.\n")
+        print(" Closing connection to rabbitmq server.")
         connection.close()
 
-
-# Standard Python idiom to indicate main program entry point
-# This allows us to import this module and use its functions
-# without executing the code below.
-# If this is the program being run, then execute the code below
+#standard boilerplate to call the main function
+#this is the first function that is called when the program is run
+#without executing the main function, the program will not run
+#if this is the program that is being run, then execute the main function
 if __name__ == "__main__":
-    # call the main function with the information needed and changing the queue name
-    main("localhost", "task_queue3")
+    #call the main function
+    main("localhost")
